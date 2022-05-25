@@ -111,6 +111,13 @@ async function run() {
       res.send({ result, accessToken: token });
     });
 
+    app.get("/users", verifyJWT, async (req, res) => {
+      const query = {};
+      const cursor = userCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.put("/user/admin/:email", async (req, res) => {
       const email = req.params.email;
       const requester = req.decoded.email;
