@@ -87,6 +87,12 @@ async function run() {
       const result = await parchesCollection.insertOne(parches);
       res.send({ success: true, result });
     });
+
+    app.post("/review", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send({ success: true, result });
+    });
   } finally {
     // await client.close();
   }
