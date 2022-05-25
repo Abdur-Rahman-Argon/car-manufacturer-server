@@ -135,6 +135,15 @@ async function run() {
         return res.status(403).send({ message: "Forbidden Access" });
       }
     });
+
+    app.get("/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({
+        email: email,
+      });
+      const isAdmin = user.role === "admin";
+      res.send(isAdmin);
+    });
   } finally {
     // await client.close();
   }
