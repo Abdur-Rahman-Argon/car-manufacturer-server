@@ -61,6 +61,13 @@ async function run() {
       res.send({ success: true, result });
     });
 
+    app.delete("/parts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await partsCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.get("/parts/:id", async (req, res) => {
       const id = req.params.id;
       const query = {};
@@ -143,9 +150,27 @@ async function run() {
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "1d" }
       );
       res.send({ result, accessToken: token });
+    });
+
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const user = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      res.send({ result });
+    });
+
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      res.send(user);
     });
 
     app.get("/users", verifyJWT, async (req, res) => {
