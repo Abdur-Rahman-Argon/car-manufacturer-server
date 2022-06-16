@@ -44,6 +44,10 @@ async function run() {
       .db("CarManufacturers")
       .collection("parches");
 
+    const paymentCollection = client
+      .db("CarManufacturers")
+      .collection("payment");
+
     const userCollection = client.db("CarManufacturers").collection("user");
 
     const reviewCollection = client.db("CarManufacturers").collection("review");
@@ -55,7 +59,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/parts", verifyJWT, async (req, res) => {
+    app.post("/parts", async (req, res) => {
       const parts = req.body;
       const result = await partsCollection.insertOne(parts);
       res.send({ success: true, result });
@@ -77,7 +81,7 @@ async function run() {
       res.send(part);
     });
 
-    app.get("/parches", verifyJWT, async (req, res) => {
+    app.get("/parches", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const decodedEmail = req.decoded.email;
@@ -100,6 +104,13 @@ async function run() {
       res.send(orders);
     });
 
+    app.get("/orders", async (req, res) => {
+      const query = {};
+      const orders = await parchesCollection.find(query);
+      const result = await orders.toArray();
+      res.send(result);
+    });
+
     app.delete("/parches/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -107,7 +118,25 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/parches", verifyJWT, async (req, res) => {
+    app.patch("/parches/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const payment = req.body;
+      const updateDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+      const result = await paymentCollection.insertOne(payment);
+      const updateParches = await parchesCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send({ updateParches });
+    });
+
+    app.post("/parches", async (req, res) => {
       const parches = req.body;
       const result = await parchesCollection.insertOne(parches);
       res.send({ success: true, result });
